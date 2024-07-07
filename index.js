@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -33,6 +33,32 @@ async function run() {
 
     app.get("/chats", async (req, res) => {
       const result = await chatCollection.find().toArray();
+      res.send(result);
+    });
+    app.get("/reply-chats", async (req, res) => {
+      const result = await replyChatCollection.find().toArray();
+      res.send(result);
+    });
+
+    // app.post('/chats',async(req,res)=>{
+    //     const message = req.body;
+    //     const result = await replyChatCollection.insertOne(message);
+    //     res.send(result);
+    // })
+
+    app.put("/chats/:id", async (req, res) => {
+      const id = req.params.id;
+      const replyMessage = req.body;
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+
+      const updateDoc = {
+        $set: {
+          reply: replyMessage,
+        },
+      };
+
+      const result = await chatCollection.updateOne(filter, updateDoc, options);
       res.send(result);
     });
 
